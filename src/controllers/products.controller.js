@@ -41,18 +41,31 @@ exports.create = async (req, res, next) => {
   try {
     const { name, price, description, stock } = req.body;
 
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({ error: 'No autorizado' });
+    }
+
     if (!name || name.trim() === '') {
       return res.status(400).json({ error: 'El campo name es requerido' });
     }
+
     if (price === undefined || price === null || isNaN(Number(price)) || Number(price) <= 0) {
       return res.status(400).json({ error: 'price debe ser un número mayor que 0' });
     }
 
     const { rows } = await pool.query(
-      `INSERT INTO products (name, price, description, stock)
-       VALUES ($1, $2, $3, $4)
+      `INSERT INTO products (name, price, description, stock, user_id)
+       VALUES ($1, $2, $3, $4, $5)
        RETURNING *`,
-      [name.trim(), Number(price), description || null, stock ?? 0]
+      [
+        name.trim(),
+        Number(price),
+        description || null,
+        stock ?? 0,
+        userId
+      ]
     );
 
     res.status(201).json(rows[0]);
