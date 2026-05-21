@@ -1,0 +1,10 @@
+const authorizeRole = (...roles) => (req, res, next) => {
+  if (!req.user || !roles.includes(req.user.role)) {
+    return res.status(403).json({
+      error: `Acceso denegado. Se requiere rol: ${roles.join(' o ')}`,
+    });
+  }
+  next();
+};
+
+module.exports = authorizeRole;
